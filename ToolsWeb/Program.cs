@@ -28,6 +28,29 @@ namespace ToolsWeb
         [STAThread]
         static void Main(string[] args)
         {
+            //Tạo file excel trước khi vào vòng lặp 
+            string apiKey = "ApiKey"; // Replace with your API Key or other suitable value
+            string currentTime = DateTime.Now.ToString("ddMMyyyy");
+            string filePath = $"../../../AccountData/{apiKey}_{currentTime}.xlsx";
+
+            XLWorkbook workbook;
+            if (File.Exists(filePath))
+            {
+                workbook = new XLWorkbook(filePath);
+            }
+            else
+            {
+                workbook = new XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("Data");
+                worksheet.Cell(1, 1).Value = "Email";
+                worksheet.Cell(1, 2).Value = "Password";
+                worksheet.Cell(1, 3).Value = "TextToSpeech";
+                worksheet.Cell(1, 4).Value = "PpScan";
+                worksheet.Cell(1, 5).Value = "IdScan";
+                worksheet.Cell(1, 6).Value = "DriverScan";
+                workbook.SaveAs(filePath);
+            }
+
             for (int i = 0; i < 1000; i++)
             {
                 #region Khởi tạo driver
@@ -308,7 +331,7 @@ namespace ToolsWeb
                     Thread.Sleep(500);
 
                     //Xuất data ra file excel 
-                    AddDataToExcel(email, password, textToSpeech, ppScan, idScan, driverScan);
+                    AddDataToExcel(workbook, email, password, textToSpeech, ppScan, idScan, driverScan);
 
 
                     // Đóng driver
@@ -324,58 +347,28 @@ namespace ToolsWeb
                 #endregion
             }
         }
-    
+
         #region Các method
 
         //Lưu file excel
-        static void AddDataToExcel(string email, string password, string textToSpeech, string ppScan, string idScan, string driverScan)
+        static void AddDataToExcel(XLWorkbook workbook, string email, string password, string textToSpeech, string ppScan, string idScan, string driverScan)
         {
-            string apiKey = "ApiKey"; // Thay thế bằng API Key của bạn hoặc giá trị khác phù hợp
-            string currentTime = DateTime.Now.ToString("ddMMyyyy"); // Lấy thời gian hiện tại và định dạng thành "yyyyMMdd"
+            // Get the worksheet with the name "Data"
+            var worksheet = workbook.Worksheet("Data");
 
-            string newFilePath = $"../../../AccountData/{apiKey}_{currentTime}.xlsx"; // Tạo tên mới cho file Excel
+            // Get the row count to determine where to add the new data
+            int rowCount = worksheet.RowsUsed().Count() + 1;
 
-            // Kiểm tra xem file Excel đã tồn tại hay chưa
-            if (!File.Exists(newFilePath))
-            {
-                // Nếu file không tồn tại, tạo một file mới và thêm tiêu đề cho các cột
-                using (var workbook = new XLWorkbook())
-                {
-                    var worksheet = workbook.Worksheets.Add("Data");
+            // Add data to the next row
+            worksheet.Cell(rowCount, 1).Value = email;
+            worksheet.Cell(rowCount, 2).Value = password;
+            worksheet.Cell(rowCount, 3).Value = textToSpeech;
+            worksheet.Cell(rowCount, 4).Value = ppScan;
+            worksheet.Cell(rowCount, 5).Value = idScan;
+            worksheet.Cell(rowCount, 6).Value = driverScan;
 
-                    // Gán tiêu đề cho các cột trong Excel
-                    worksheet.Cell(1, 1).Value = "Email";
-                    worksheet.Cell(1, 2).Value = "Password";
-                    worksheet.Cell(1, 3).Value = "TextToSpeech";
-                    worksheet.Cell(1, 4).Value = "PpScan";
-                    worksheet.Cell(1, 5).Value = "IdScan";
-                    worksheet.Cell(1, 6).Value = "DriverScan";
-
-                    // Lưu file Excel
-                    workbook.SaveAs(newFilePath);
-                }
-            }
-
-            // Mở file Excel đã có sẵn
-            using (var workbook = new XLWorkbook(newFilePath))
-            {
-                // Lấy ra worksheet có tên "Data" (hoặc tên của worksheet chứa dữ liệu của bạn)
-                var worksheet = workbook.Worksheet("Data");
-
-                // Đếm số hàng đã có trong worksheet
-                int rowCount = worksheet.RowsUsed().Count() + 1;
-
-                // Thêm dữ liệu mới vào hàng tiếp theo của worksheet
-                worksheet.Cell(rowCount, 1).Value = email;
-                worksheet.Cell(rowCount, 2).Value = password;
-                worksheet.Cell(rowCount, 3).Value = textToSpeech;
-                worksheet.Cell(rowCount, 4).Value = ppScan;
-                worksheet.Cell(rowCount, 5).Value = idScan;
-                worksheet.Cell(rowCount, 6).Value = driverScan;
-
-                // Lưu file Excel
-                workbook.Save();
-            }
+            workbook.Save();
+            workbook.Dispose();
         }
 
         //Regex api key
