@@ -54,13 +54,13 @@ namespace ToolsWeb
                 }
             }
 
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 1; i++)
             {
                 #region Khởi tạo driver
 
                 ChromeOptions options = new ChromeOptions();
                 options.AddArguments("--disable-notifications");
-
+                    
                 // Khởi tạo ChromeDriver
                 IWebDriver driver = new ChromeDriver(options);
                 Actions actions = new Actions(driver);
@@ -333,13 +333,14 @@ namespace ToolsWeb
                     temp = "";
                     Thread.Sleep(500);
 
-                    //Xuất data ra file excel 
-                    AddDataToExcel(email, password, textToSpeech, ppScan, idScan, driverScan);
-
-
                     // Đóng driver
                     driver.Close();
                     driver.Quit();
+                    driver.Quit();
+
+                    //Xuất data ra file excel 
+                    AddDataToExcel(email, password, textToSpeech, ppScan, idScan, driverScan);             
+                    
                     #endregion
                 }
                 catch (Exception ex)
